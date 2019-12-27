@@ -111,6 +111,8 @@
             this.lblPass = new System.Windows.Forms.Label();
             this.txtAdmin = new System.Windows.Forms.TextBox();
             this.lblAdmin = new System.Windows.Forms.Label();
+            this.pbUploadForumThread = new System.Windows.Forms.ProgressBar();
+            this.lblForumThreadProgressCount = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgForumThread)).BeginInit();
             this.tbcForum.SuspendLayout();
             this.tbpForum.SuspendLayout();
@@ -481,6 +483,8 @@
             // 
             // tbpForumThread
             // 
+            this.tbpForumThread.Controls.Add(this.lblForumThreadProgressCount);
+            this.tbpForumThread.Controls.Add(this.pbUploadForumThread);
             this.tbpForumThread.Controls.Add(this.cmdAssignForumThread);
             this.tbpForumThread.Controls.Add(this.txtForumPostNoOfRows);
             this.tbpForumThread.Controls.Add(this.lblForumPostNoOfRows);
@@ -840,6 +844,7 @@
             this.lvEvents.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.lvEvents.FullRowSelect = true;
             this.lvEvents.GridLines = true;
+            this.lvEvents.HideSelection = false;
             this.lvEvents.Location = new System.Drawing.Point(0, 330);
             this.lvEvents.Name = "lvEvents";
             this.lvEvents.Size = new System.Drawing.Size(684, 131);
@@ -899,7 +904,7 @@
             this.txtServer.Name = "txtServer";
             this.txtServer.Size = new System.Drawing.Size(204, 20);
             this.txtServer.TabIndex = 9;
-            this.txtServer.Text = "http://wcdciis40d:8090";
+            this.txtServer.Text = "http://localhost:8090";
             // 
             // lblSpace
             // 
@@ -916,7 +921,7 @@
             this.txtSpace.Name = "txtSpace";
             this.txtSpace.Size = new System.Drawing.Size(100, 20);
             this.txtSpace.TabIndex = 11;
-            this.txtSpace.Text = "CFDMF";
+            this.txtSpace.Text = "DEMO";
             // 
             // txtPass
             // 
@@ -925,7 +930,7 @@
             this.txtPass.PasswordChar = '*';
             this.txtPass.Size = new System.Drawing.Size(100, 20);
             this.txtPass.TabIndex = 15;
-            this.txtPass.Text = "abc$123~~";
+            this.txtPass.Text = "LImbu1979";
             // 
             // lblPass
             // 
@@ -952,6 +957,21 @@
             this.lblAdmin.Size = new System.Drawing.Size(36, 13);
             this.lblAdmin.TabIndex = 12;
             this.lblAdmin.Text = "Admin";
+            // 
+            // pbUploadForumThread
+            // 
+            this.pbUploadForumThread.Location = new System.Drawing.Point(342, 61);
+            this.pbUploadForumThread.Name = "pbUploadForumThread";
+            this.pbUploadForumThread.Size = new System.Drawing.Size(227, 23);
+            this.pbUploadForumThread.TabIndex = 24;
+            // 
+            // lblForumThreadProgressCount
+            // 
+            this.lblForumThreadProgressCount.AutoSize = true;
+            this.lblForumThreadProgressCount.Location = new System.Drawing.Point(576, 67);
+            this.lblForumThreadProgressCount.Name = "lblForumThreadProgressCount";
+            this.lblForumThreadProgressCount.Size = new System.Drawing.Size(0, 13);
+            this.lblForumThreadProgressCount.TabIndex = 25;
             // 
             // frmMain
             // 
@@ -1075,6 +1095,8 @@
         private System.Windows.Forms.Label lblPass;
         private System.Windows.Forms.TextBox txtAdmin;
         private System.Windows.Forms.Label lblAdmin;
+        private System.Windows.Forms.ProgressBar pbUploadForumThread;
+        private System.Windows.Forms.Label lblForumThreadProgressCount;
     }
 }
 

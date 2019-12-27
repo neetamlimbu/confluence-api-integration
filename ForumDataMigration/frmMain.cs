@@ -319,7 +319,7 @@ namespace ForumDataMigration
             }
 
             ListViewItem listViewItem = null;
-            listViewItem = new ListViewItem("Add Forum");
+          
 
             try
             {
@@ -334,11 +334,13 @@ namespace ForumDataMigration
 
                     if (success)
                     {
+                        listViewItem = new ListViewItem("Add Forum");
                         listViewItem.SubItems.Add("Added Forum: " + name);
                         lvEvents.Items.Add(listViewItem);
                     }
                     else
                     {
+                        listViewItem = new ListViewItem("Add Forum");
                         listViewItem.SubItems.Add("Failed to add Forum: " + name);
                         lvEvents.Items.Add(listViewItem);
                     }
@@ -352,6 +354,7 @@ namespace ForumDataMigration
             }
             catch (Exception ex)
             {
+                listViewItem = new ListViewItem("Add Forum");
                 listViewItem.SubItems.Add("Unexpected Error" + ex.ToString());
                 lvEvents.Items.Add(listViewItem);
             }
@@ -1080,7 +1083,7 @@ namespace ForumDataMigration
             Cursor.Current = Cursors.Default;
         }
 
-        private async void cmdUploadForumThread_Click(object sender, EventArgs e)
+        private void cmdUploadForumThread_Click(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.WaitCursor;
 
@@ -1092,11 +1095,29 @@ namespace ForumDataMigration
 
             //ListViewItem listViewItem = null;
 
+            int intMax = 0;
+
+            bool success = Int32.TryParse(txtForumPostNoOfRows.Text.Trim(), out intMax);
+
+            pbUploadForumThread.Maximum = intMax;
+            pbUploadForumThread.Step = 1;
+
+            ThreadStart childref = new ThreadStart(UploadForumThreads);
+
+            Thread childThread = new Thread(childref);
+            childThread.Start();
+
+            Cursor.Current = Cursors.Default;
+        }
+
+        private void UploadForumThreads()
+        {
             try
             {
                 List<ForumThread> forumThreads = ((List<ForumThread>)dgForumThread.DataSource).Where(d => d.Select == true)
                .ToList();
 
+                int count = 0;
                 foreach (ForumThread forumThread in forumThreads)
                 {
                     string subject = forumThread.Subject;
@@ -1111,7 +1132,7 @@ namespace ForumDataMigration
 
                     string errorMessage = string.Empty;
 
-                    if(doc.ParseErrors.Count() > 0)
+                    if (doc.ParseErrors.Count() > 0)
                     {
                         //Invalid HTML
                         errorMessage = "Invalid HTML for Subject \"" + subject + "\"" + ", SFID: " + forumThread.SFID;
@@ -1140,42 +1161,48 @@ namespace ForumDataMigration
                         //lvEvents.Items.Add(listViewItem);
                     }
 
-                    string userName = forumThread.Author;
-                    string password = string.Empty;
 
-                    if (string.IsNullOrWhiteSpace(userName))
-                    {
-                        userName = "admin";
-                    }
+                    //string userName = forumThread.Author;
+                    //string password = string.Empty;
 
-                    if (userName.ToLower().Equals("admin"))
-                    {
-                        password = Helper.DefaultAdminPassword;
-                    }
-                    else
-                    {
-                        password = Helper.DefaultUserPassword;
-                    }
+                    //if (string.IsNullOrWhiteSpace(userName))
+                    //{
+                    //    userName = "admin";
+                    //}
 
-                    bool success = await Task.FromResult(Helper.AddForumThreadAsync(userName.Trim(), password.Trim(), txtSpace.Text.Trim(),
-                         txtServer.Text.Trim(), txtForumThreadApiUrl.Text.Trim(), subject, htmlMessage, parentPageId.ToString())).Result;
+                    //if (userName.ToLower().Equals("admin"))
+                    //{
+                    //    password = Helper.DefaultAdminPassword;
+                    //}
+                    //else
+                    //{
+                    //    password = Helper.DefaultUserPassword;
+                    //}
 
-                    //listViewItem = new ListViewItem("Add Forum Thread");
-                    if (success)
-                    {
-                        message = "Added Forum Thread: " + subject;
-                        
-                        //listViewItem.SubItems.Add("Added Forum Thread: " + subject);
-                        //lvEvents.Items.Add(listViewItem);
-                    }
-                    else
-                    {
-                        message = "Failed to add Forum Thread: " + subject;
-                        //listViewItem.SubItems.Add("Failed to add forum thread: " + subject);
-                        //lvEvents.Items.Add(listViewItem);
-                    }
+                    //bool success = await Task.FromResult(Helper.AddForumThreadAsync(userName.Trim(), password.Trim(), txtSpace.Text.Trim(),
+                    //     txtServer.Text.Trim(), txtForumThreadApiUrl.Text.Trim(), subject, htmlMessage, parentPageId.ToString())).Result;
 
-                    WriteLogFile(message);
+                    ////listViewItem = new ListViewItem("Add Forum Thread");
+                    //if (success)
+                    //{
+                    //    message = "Added Forum Thread: " + subject;
+
+                    //    //listViewItem.SubItems.Add("Added Forum Thread: " + subject);
+                    //    //lvEvents.Items.Add(listViewItem);
+                    //}
+                    //else
+                    //{
+                    //    message = "Failed to add Forum Thread: " + subject;
+                    //    //listViewItem.SubItems.Add("Failed to add forum thread: " + subject);
+                    //    //lvEvents.Items.Add(listViewItem);
+                    //}
+
+                    //WriteLogFile(message);
+
+                    //bool success = await Task.FromResult(true);
+                    count++;
+                    SetForumThreadProgress(count);
+                    Thread.Sleep(1000);
                 }
             }
             catch (Exception ex)
@@ -1186,8 +1213,25 @@ namespace ForumDataMigration
 
                 WriteLogFile("Add Forum Thread - " + "Unexpected Error: " + ex.ToString());
             }
+        }
 
-            Cursor.Current = Cursors.Default;
+        delegate void SetForumThreadProgressCallback(int count);
+
+        private void SetForumThreadProgress(int count)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (this.pbUploadForumThread.InvokeRequired)
+            {
+                SetForumThreadProgressCallback d = new SetForumThreadProgressCallback(SetForumThreadProgress);
+                this.Invoke(d, new object[] { count });
+            }
+            else
+            {
+                this.pbUploadForumThread.Value = count;
+                lblForumThreadProgressCount.Text = count.ToString() + " of " + txtForumPostNoOfRows.Text.Trim();
+            }
         }
 
         private async void cmdAssignParentPage_Click(object sender, EventArgs e)

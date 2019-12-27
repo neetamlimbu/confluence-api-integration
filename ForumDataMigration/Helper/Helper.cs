@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -16,7 +17,7 @@ namespace ForumDataMigration
 
         public static string DefaultAdmin
         {
-            get { return "admin";  }
+            get { return "admin"; }
         }
 
         public static string DefaultAdminPassword
@@ -301,8 +302,8 @@ namespace ForumDataMigration
         private static string EndUnderlined = "[/u]";
         private static string EndAlignLeft = "[/align]";
         private static string EndList = "[/list]";
-        private static string Image = "[img]";
-        private static string EndImage = "[/img]<br>";
+        private static string ImageTag = "[img]";
+        private static string EndImageTag = "[/img]<br>";
 
         private static string ReplaceFontSize13 = "<font size=\"13px\">";
         private static string ReplaceBold = "<b>";
@@ -321,20 +322,27 @@ namespace ForumDataMigration
 
         public static string ReplaceTags(string text)
         {
-            text = text.Replace(FontSize13, ReplaceFontSize13);
-            text = text.Replace(Bold, ReplaceBold);
-            text = text.Replace(Underlined, ReplaceUnderlined);
-            text = text.Replace(AlignLeft, ReplaceAlignLeft);
-            text = text.Replace(UnorderedList, ReplaceUnorderedList);
-            text = text.Replace(ListItem, ReplaceListItem);
-            text = text.Replace(EndFontSize13, ReplaceEndFontSize13);
-            text = text.Replace(EndBold, ReplaceEndBold);
-            text = text.Replace(EndUnderlined, ReplaceEndUnderlined);
-            text = text.Replace(EndAlignLeft, ReplaceEndAlignLeft);
-            text = text.Replace(EndList, ReplaceEndList);
+            try
+            {
+                text = text.Replace(FontSize13, ReplaceFontSize13);
+                text = text.Replace(Bold, ReplaceBold);
+                text = text.Replace(Underlined, ReplaceUnderlined);
+                text = text.Replace(AlignLeft, ReplaceAlignLeft);
+                text = text.Replace(UnorderedList, ReplaceUnorderedList);
+                text = text.Replace(ListItem, ReplaceListItem);
+                text = text.Replace(EndFontSize13, ReplaceEndFontSize13);
+                text = text.Replace(EndBold, ReplaceEndBold);
+                text = text.Replace(EndUnderlined, ReplaceEndUnderlined);
+                text = text.Replace(EndAlignLeft, ReplaceEndAlignLeft);
+                text = text.Replace(EndList, ReplaceEndList);
 
-            //Image tags
-            text = ReplaceImageTags(text, Image, EndImage);
+                //Image tags
+                text = ReplaceImageTags(text, ImageTag, EndImageTag);
+            }
+            catch (Exception ex)
+            {
+                WriteLogFile(ex.ToString());
+            }
 
             return text;
         }
@@ -353,38 +361,48 @@ namespace ForumDataMigration
 
         private static string ReplaceImageTags(string text, string start, string end)
         {
-
-            int indexStart = text.IndexOf(start);
-
-            if (indexStart == -1)
-                return text;
-
-            int indexEnd = 0;
-            bool exit = false;
-
-            while (!exit)
+            try
             {
-                if (indexStart != -1)
-                {
-                    indexEnd = text.IndexOf(end);
+                int indexStart = text.IndexOf(start);
 
-                    if (indexEnd != -1)
+                if (indexStart == -1)
+                    return text;
+
+                int indexEnd = 0;
+                bool exit = false;
+
+                while (!exit)
+                {
+                    if (indexStart != -1)
                     {
-                        //Insert attributes
-                        text = text.Insert(indexStart + 5, "src=\"");
-                        text = text.Insert(indexEnd + 5, "\">");
-                        text = text.Replace("[img]src=\"http://informatics.home", "<img src=\"http://informatics.home");
-                        text = text.Replace(">[/img]", "</img>");
+                        indexEnd = text.IndexOf(end);
+
+                        if (indexEnd != -1)
+                        {
+                            //Insert attributes
+                            text = text.Insert(indexStart + 5, "src=\"");
+                            text = text.Insert(indexEnd + 5, "\">");
+                            text = text.Replace("[img]src=\"http://informatics.home", "<img src=\"http://informatics.home");
+                            text = text.Replace(">[/img]", "</img>");
+                        }
+                        else
+                        {
+                            exit = true;
+                        }
                     }
-                }
-                else
-                {
-                    exit = true;
-                }
+                    else
+                    {
+                        exit = true;
+                    }
 
-                indexStart = text.IndexOf(start);
+                    indexStart = text.IndexOf(start);
+                }
             }
-
+            catch(Exception ex)
+            {
+                WriteLogFile(ex.ToString());
+            }
+           
             return text;
         }
 
@@ -461,6 +479,20 @@ namespace ForumDataMigration
         //}
 
         #endregion
+
+
+        private static void WriteLogFile(string message)
+        {
+            if (!Directory.Exists(Application.StartupPath + "\\Logs\\"))
+            {
+                Directory.CreateDirectory(Application.StartupPath + "\\Logs\\");
+            }
+
+            StreamWriter file = new StreamWriter(Application.StartupPath + "\\Logs\\" + DateTime.Now.ToString("yyyy-MM-dd") + ".txt", true);
+
+            file.WriteLine(message);
+            file.Close();
+        }
 
     }
 }
